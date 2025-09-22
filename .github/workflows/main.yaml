@@ -32,12 +32,14 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       # Step 3: Deploy the entire infrastructure using your Bicep file FIRST.
+      - name: Update Azure CLI
+        run: az upgrade --yes --all
       - name: Deploy Bicep Infrastructure
         run: |
           az deployment group create \
             --resource-group ${{ env.RESOURCE_GROUP }} \
             --template-file ./infra/main.bicep \
-            --parameters projectName=${{ env.PROJECT_NAME }}
+            --parameters projectName=${{ env.PROJECT_NAME }} apimName=${{ env.APIM_NAME }}
 
       # Step 4: Now that the ACR exists, log in to it.
       - name: Login to ACR
