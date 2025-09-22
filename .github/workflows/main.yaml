@@ -35,6 +35,7 @@ jobs:
       - name: Update Azure CLI
         run: az upgrade --yes --all
       - name: Deploy Bicep Infrastructure
+        shell: bash
         run: |
           az deployment group create \
             --resource-group ${{ env.RESOURCE_GROUP }} \
