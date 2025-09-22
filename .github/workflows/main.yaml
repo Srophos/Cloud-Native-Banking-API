@@ -35,12 +35,12 @@ jobs:
       - name: Update Azure CLI
         run: az upgrade --yes --all
       - name: Deploy Bicep Infrastructure
-        shell: bash
-        run: |
-          az deployment group create \
-            --resource-group ${{ env.RESOURCE_GROUP }} \
-            --template-file ./infra/main.bicep \
-            --parameters projectName=${{ env.PROJECT_NAME }} 
+        uses: azure/arm-deploy@v1
+        with:
+            subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            resourceGroupName: ${{ env.RESOURCE_GROUP }}
+            template: ./infra/main.bicep
+            parameters: projectName=${{ env.PROJECT_NAME }} 
 
       # Step 4: Now that the ACR exists, log in to it.
       - name: Login to ACR
