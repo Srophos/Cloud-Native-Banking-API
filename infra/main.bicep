@@ -5,7 +5,7 @@ param location string = 'northeurope'
 
 // === VARIABLES ===
 // These are values we'll reuse throughout the file.
-var acrName = '${projectName}acr${uniqueString(resourceGroup().id)}'
+var acrName = 'bankproj'
 var serviceBusNamespaceName = '${projectName}-servicebus'
 var apimName = '${projectName}-apim-${uniqueString(resourceGroup().id)}'
 var containerAppEnvName = 'BankingAppEnv'
