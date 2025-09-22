@@ -45,7 +45,7 @@ resource apim 'Microsoft.ApiManagement/service@2022-08-01' = {
     capacity:0
   }
   properties: {
-    publisherEmail: 'youremail@example.com' // Update with your email
+    publisherEmail: 'sriniwork5693@gmail.com' // Update with your email
     publisherName: 'Banking Project'
   }
 }

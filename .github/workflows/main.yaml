@@ -1,0 +1,67 @@
+# This is the name of our CI/CD pipeline
+name: Build and Deploy Banking App
+
+# This section defines the trigger for the workflow.
+# It will run every time you push code to the 'main' branch.
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows you to manually run the workflow too
+
+# This section defines the environment variables we'll use.
+# UPDATE THESE WITH YOUR UNIQUE NAMES
+env:
+  ACR_NAME: bankproj
+  APIM_NAME: bankproj-apim
+  RESOURCE_GROUP: B-api
+
+jobs:
+  build-and-deploy:
+    # This job will run on a fresh virtual machine hosted by GitHub.
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out your code from the repository.
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Log in to Azure using the secret we created.
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Step 3: Log in to your Azure Container Registry.
+      - name: Login to ACR
+        run: az acr login --name ${{ env.ACR_NAME }}
+
+      # Step 4: Build, tag, and push all Docker images.
+      - name: Build and Push Docker Images
+        run: |
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/account-service:v1 ./AccountService
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-service:v1 ./TransactionService
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:v1 ./TransactionWorker
+          docker push ${{ env.ACR_NAME }}.azurecr.io/account-service:v1
+          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-service:v1
+          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:v1
+
+      # Step 5: Deploy the entire infrastructure using your Bicep file.
+      - name: Deploy Bicep Infrastructure
+        run: |
+          az deployment group create \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --template-file ./infra/main.bicep \
+            --parameters projectName=bankproj apimName=${{ env.APIM_NAME }} acrName=${{ env.ACR_NAME }}
+
+      # Step 6: Set the final RBAC permissions.
+      - name: Assign Service Bus Roles
+        run: |
+          TRANSACTION_SERVICE_PRINCIPAL_ID=$(az containerapp show --name transaction-service --resource-group ${{ env.RESOURCE_GROUP }} --query "identity.principalId" -o tsv)
+          TRANSACTION_WORKER_PRINCIPAL_ID=$(az containerapp show --name transaction-worker --resource-group ${{ env.RESOURCE_GROUP }} --query "identity.principalId" -o tsv)
+          
+          az role assignment create --assignee $TRANSACTION_SERVICE_PRINCIPAL_ID --role "Azure Service Bus Data Sender" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.ServiceBus/namespaces/bankproj-servicebus"
+          az role assignment create --assignee $TRANSACTION_WORKER_PRINCIPAL_ID --role "Azure Service Bus Data Receiver" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.ServiceBus/namespaces/bankproj-servicebus"
+
+      # Step 7: Log out of Azure.
+      - name: Logout of Azure
+        run: az logout
