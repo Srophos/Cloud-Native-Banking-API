@@ -34,6 +34,8 @@ jobs:
       # Step 3: Deploy the entire infrastructure using your Bicep file FIRST.
       - name: Update Azure CLI
         run: az upgrade --yes --all
+      - name: Create Resource Group
+        run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
       - name: Deploy Bicep Infrastructure
         uses: azure/arm-deploy@v1
         with:
