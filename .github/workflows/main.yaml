@@ -35,9 +35,9 @@ jobs:
       - name: Deploy Bicep Infrastructure
         run: |
           az deployment group create \
-          --resource-group ${{ env.RESOURCE_GROUP }} \
-          --template-file ./infra/main.bicep \
-          --parameters projectName=${{ env.PROJECT_NAME }}
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --template-file ./infra/main.bicep \
+            --parameters projectName=${{ env.PROJECT_NAME }} acrName=${{ env.ACR_NAME }}
 
       # Step 4: Now that the ACR exists, log in to it.
       - name: Login to ACR

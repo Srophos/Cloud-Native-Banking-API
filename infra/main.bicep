@@ -36,7 +36,7 @@ resource transactionsQueue 'Microsoft.ServiceBus/namespaces/queues@2022-10-01-pr
   parent: serviceBus // This links it to the namespace
 }
 
-// --- API Management ---
+/* --- API Management ---
 resource apim 'Microsoft.ApiManagement/service@2022-08-01' = {
   name: apimName
   location: location
@@ -48,7 +48,7 @@ resource apim 'Microsoft.ApiManagement/service@2022-08-01' = {
     publisherEmail: 'sriniwork5693@gmail.com' // Update with your email
     publisherName: 'Banking Project'
   }
-}
+}*/
 // --- Container Apps Environment ---
 resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: containerAppEnvName
