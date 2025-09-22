@@ -7,7 +7,7 @@ param location string = 'northeurope'
 // These are values we'll reuse throughout the file.
 var acrName = 'bankproj'
 var serviceBusNamespaceName = '${projectName}-servicebus'
-var apimName = '${projectName}-apim-${uniqueString(resourceGroup().id)}'
+var apimName = 'bankproj-apim'
 var containerAppEnvName = 'BankingAppEnv'
 // --- Azure Container Registry ---
 resource acr 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' = {
