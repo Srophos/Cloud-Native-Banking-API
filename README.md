@@ -8,8 +8,6 @@ This project is a capstone demonstrating skills from the AZ-900 to AZ-305 (Azure
 
 +  Complete Automation: The entire cloud environment is defined as Infrastructure as Code (IaC) using Bicep. A full CI/CD pipeline in GitHub Actions automatically builds, tests, and deploys all infrastructure and application code on every commit.
 
-🏛️ Architecture Diagram
-(This is the most important visual. Replace the placeholder link below with the path to your architecture diagram.)
 
 | Category                  | Technology / Service                               |
 | ------------------------- | -------------------------------------------------- |
