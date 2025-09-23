@@ -15,7 +15,7 @@ var containerAppEnvName = 'BankingAppEnv'
 var logAnalyticsWorkspaceName = '${projectName}-logs'
 var sqlServerName = '${projectName}-sqlserver-${uniqueString(resourceGroup().id)}' // NEW
 var sqlDatabaseName = 'BankingDB' // NEW
-var keyVaultName = '${projectName}-kv-${uniqueString(resourceGroup().id)}' // NEW
+var keyVaultName ='${projectName}kv${uniqueString(resourceGroup().id)}' // NEW
 
 // --- Azure Container Registry ---
 resource acr 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' = {
@@ -207,7 +207,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
 }
 // === VARIABLES for Role Assignments ===
 // These are the unique IDs for the built-in Azure roles we need.
-var serviceBusDataSenderRoleId = '69a216fc-b8fb-44d8-824e-898b4def0749'
+var serviceBusDataSenderRoleId ='69a216fc-b8fb-44d8-824e-898b4def0749'
 var serviceBusDataReceiverRoleId = '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
 
 // --- Role Assignment for TransactionService (Sender) ---
