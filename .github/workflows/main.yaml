@@ -51,12 +51,21 @@ jobs:
       # Step 5: Build, tag, and push all Docker images.
       - name: Build and Push Docker Images
         run: |
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/account-service:v1 ./AccountService
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-service:v1 ./TransactionService
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:v1 ./TransactionWorker
-          docker push ${{ env.ACR_NAME }}.azurecr.io/account-service:v1
-          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-service:v1
-          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:v1
+          az acr login --name ${{ env.ACR_NAME }}
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/account-service:latest ./AccountService
+          docker push ${{ env.ACR_NAME }}.azurecr.io/account-service:latest
+          
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-service:latest ./TransactionService
+          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-service:latest
+          
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:latest ./TransactionWorker
+          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:latest
+      #6 update images 
+      - name: Update Container Apps with Latest Image
+        run: |
+          az containerapp update --name account-service --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.ACR_NAME }}.azurecr.io/account-service:latest
+          az containerapp update --name transaction-service --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.ACR_NAME }}.azurecr.io/transaction-service:latest
+          az containerapp update --name transaction-worker --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:latest
 
       # Step 6: Set the final RBAC permissions.
       - name: Assign Service Bus Roles
