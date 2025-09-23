@@ -153,7 +153,27 @@ resource transactionWorkerApp 'Microsoft.App/containerApps@2023-05-01' = {
     }
   }
 }
+// --- Role Assignment for TransactionService (Sender) ---
+resource transactionServiceSenderRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(serviceBus.id, transactionServiceApp.id, '69a216fc-b8fb-44d8-824e-898b4def0749')
+  scope: serviceBus
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '69a216fc-b8fb-44d8-824e-898b4def0749')
+    principalId: transactionServiceApp.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
 
+// --- Role Assignment for TransactionWorker (Receiver) ---
+resource transactionWorkerReceiverRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(serviceBus.id, transactionWorkerApp.id, '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0')
+  scope: serviceBus
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0')
+    principalId: transactionWorkerApp.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
 // --- Azure SQL Server (NEW) ---
 resource sqlServer 'Microsoft.Sql/servers@2022-08-01-preview' = {
   name: sqlServerName
@@ -205,4 +225,3 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
     ]
   }
 }
-
