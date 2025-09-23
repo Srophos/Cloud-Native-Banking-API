@@ -1,5 +1,6 @@
 # Cloud-native Banking API
 🌟 Project Highlights (At a Glance)
+
 This project is a capstone demonstrating skills from the AZ-900 to AZ-305 (Azure Solutions Architect Expert) certification path.
 
 +  Enterprise Architecture: Designed a secure and resilient backend using a Microservices architecture, with an API Gateway (APIM) and an asynchronous messaging queue (Azure Service Bus).
@@ -8,6 +9,7 @@ This project is a capstone demonstrating skills from the AZ-900 to AZ-305 (Azure
 
 +  Complete Automation: The entire cloud environment is defined as Infrastructure as Code (IaC) using Bicep. A full CI/CD pipeline in GitHub Actions automatically builds, tests, and deploys all infrastructure and application code on every commit.
 
+🛠️ Technology Stack
 
 | Category                  | Technology / Service                               |
 | ------------------------- | -------------------------------------------------- |
@@ -34,6 +36,7 @@ This project is a capstone demonstrating skills from the AZ-900 to AZ-305 (Azure
 <summary><strong>Click to see the System Flow and Deployment Steps</strong></summary>
 
 🌊 System Flow: Creating a Transaction
+
 A client sends a POST /transactions request to the public APIM Gateway URL, including its API subscription key.
 
 APIM validates the key and routes the request to the internal TransactionService.
@@ -45,6 +48,7 @@ The TransactionWorker, which is constantly listening to the queue, picks up the 
 The worker processes the transaction logic and, upon success, deletes the message from the queue to mark it as complete.
 
 🚀 Setup and Deployment
+
 This project is configured for fully automated deployment. To replicate this environment:
 
 Fork the Repository and clone it locally.
