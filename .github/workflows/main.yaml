@@ -36,19 +36,13 @@ jobs:
         run: az upgrade --yes --all
       - name: Create Resource Group
         run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
-      - name: Replace Tokens in Parameter File
-        shell: bash
-        run: |
-          sed -i 's/__SQL_ADMIN_USERNAME__/${{ secrets.SQL_ADMIN_USERNAME }}/g' infra/main.parameters.json
-          sed -i 's/__SQL_ADMIN_PASSWORD__/${{ secrets.SQL_ADMIN_PASSWORD }}/g' infra/main.parameters.json
-
       - name: Deploy Bicep Infrastructure
         uses: azure/arm-deploy@v1
         with:
             subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
             resourceGroupName: ${{ env.RESOURCE_GROUP }}
             template: ./infra/main.bicep
-            parameters: ./infra/main.parameters.json
+            parameters: projectName=${{ env.PROJECT_NAME }} 
 
       # Step 4: Now that the ACR exists, log in to it.
       - name: Login to ACR
@@ -57,6 +51,12 @@ jobs:
       # Step 5: Build, tag, and push all Docker images.
       - name: Build and Push Docker Images
         run: |
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/account-service:v1 ./AccountService
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-service:v1 ./TransactionService
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:v1 ./TransactionWorker
+          docker push ${{ env.ACR_NAME }}.azurecr.io/account-service:v1
+          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-service:v1
+          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:v1
           az acr login --name ${{ env.ACR_NAME }}
           docker build -t ${{ env.ACR_NAME }}.azurecr.io/account-service:latest ./AccountService
           docker push ${{ env.ACR_NAME }}.azurecr.io/account-service:latest
