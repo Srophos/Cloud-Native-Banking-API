@@ -1,21 +1,4 @@
-<p align="center">
-<img src="https://www.google.com/search?q=https://i.imgur.com/your-logo-placeholder.png" alt="Project Logo" width="150">
-</p>
-
-<h1 align="center">Cloud-Native Banking API on Azure</h1>
-
-<p align="center">
-A secure, resilient, and fully automated banking API backend built on Microsoft Azure, demonstrating an enterprise-grade microservices architecture.
-</p>
-
-<p align="center">
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Azure-0078D4%3Fstyle%3Dfor-the-badge%26logo%3Dmicrosoftazure%26logoColor%3Dwhite" alt="Azure Badge"/>
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Python-3776AB%3Fstyle%3Dfor-the-badge%26logo%3Dpython%26logoColor%3Dwhite" alt="Python Badge"/>
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Docker-2496ED%3Fstyle%3Dfor-the-badge%26logo%3Ddocker%26logoColor%3Dwhite" alt="Docker Badge"/>
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/Bicep-0078D4%3Fstyle%3Dfor-the-badge%26logo%3Dazuredevops%26logoColor%3Dwhite" alt="Bicep Badge"/>
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/GitHub_Actions-2088FF%3Fstyle%3Dfor-the-badge%26logo%3Dgithubactions%26logoColor%3Dwhite" alt="GitHub Actions Badge"/>
-</p>
-
+# Cloud-native Banking API
 This repository contains the source code and infrastructure blueprint for a comprehensive, cloud-native banking API backend. This project serves as a capstone, demonstrating the practical application of skills acquired through the Microsoft Azure certification path from AZ-900 to AZ-305 (Azure Solutions Architect Expert).
 
 The architecture is designed to be secure, resilient, scalable, and fully automated, reflecting modern enterprise-level cloud practices.
