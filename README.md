@@ -37,27 +37,27 @@ This project is a capstone demonstrating skills from the AZ-900 to AZ-305 (Azure
 
 🌊 System Flow: Creating a Transaction
 
-A client sends a POST /transactions request to the public APIM Gateway URL, including its API subscription key.
+  1. A client sends a POST /transactions request to the public APIM Gateway URL, including its API subscription key.
 
-APIM validates the key and routes the request to the internal TransactionService.
+  2. APIM validates the key and routes the request to the internal TransactionService.
 
-The TransactionService validates the request body, places the transaction details as a message onto the Service Bus Queue, and immediately returns a 202 Accepted response.
+  3. The TransactionService validates the request body, places the transaction details as a message onto the Service Bus Queue, and immediately returns a 202 Accepted response.
 
-The TransactionWorker, which is constantly listening to the queue, picks up the new message.
+  4. The TransactionWorker, which is constantly listening to the queue, picks up the new message.
 
-The worker processes the transaction logic and, upon success, deletes the message from the queue to mark it as complete.
+  5. The worker processes the transaction logic and, upon success, deletes the message from the queue to mark it as complete.
 
 🚀 Setup and Deployment
 
 This project is configured for fully automated deployment. To replicate this environment:
 
-Fork the Repository and clone it locally.
+  1. Fork the Repository and clone it locally.
 
-Create an Azure Service Principal with "Contributor" rights on your subscription.
+  2. Create an Azure Service Principal with "Contributor" rights on your subscription.
 
-Add GitHub Secrets: AZURE_CREDENTIALS (the JSON output from the principal) and AZURE_SUBSCRIPTION_ID.
+  3. Add GitHub Secrets: AZURE_CREDENTIALS (the JSON output from the principal) and AZURE_SUBSCRIPTION_ID.
 
-Push a commit to the main branch to trigger the GitHub Actions workflow, which will build and deploy the entire project.
+  4. Push a commit to the main branch to trigger the GitHub Actions workflow, which will build and deploy the entire project.
 
 </details>
 
