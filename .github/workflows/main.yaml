@@ -36,16 +36,21 @@ jobs:
         run: az upgrade --yes --all
       - name: Create Resource Group
         run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
+      - name: Replace Tokens in Parameter File
+        uses: clement-v/token-replace-action@1
+        with:
+          files: '["infra/main.parameters.json"]'
+          tokenPrefix: '__'
+          tokenSuffix: '__'
+          secrets: '${{ toJSON(secrets) }}'
+
       - name: Deploy Bicep Infrastructure
         uses: azure/arm-deploy@v1
         with:
             subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
             resourceGroupName: ${{ env.RESOURCE_GROUP }}
             template: ./infra/main.bicep
-            parameters: 
-              projectName=${{ env.PROJECT_NAME }} 
-              sqlAdminLogin=${{ secrets.SQL_ADMIN_USERNAME }}
-              sqlAdminPassword= ${{ secrets.SQL_ADMIN_PASSWORD }}
+            parameters: ./infra/main.parameters.json
 
       # Step 4: Now that the ACR exists, log in to it.
       - name: Login to ACR
