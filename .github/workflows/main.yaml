@@ -37,7 +37,7 @@ jobs:
       - name: Create Resource Group
         run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
       - name: Replace Tokens in Parameter File
-        uses: qetza.replacetokens.replacetokens-task.replacetokens@6
+        uses: qetza/vsts-replacetokens-action@v3
         with:
           files: 'infra/main.parameters.json'
           tokenPrefix: '__'
