@@ -60,6 +60,7 @@ Push a commit to the main branch to trigger the GitHub Actions workflow, which w
 </details>
 
 🌱 Future Enhancements
+
 Integrate a Database: Replace the mock data in the AccountService with a real Azure SQL or Cosmos DB.
 
 Build a Frontend: Create a simple React or Angular web app that interacts with the secure APIM endpoints and deploy it to Azure Static Web Apps.
