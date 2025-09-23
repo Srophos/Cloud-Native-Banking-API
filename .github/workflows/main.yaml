@@ -64,8 +64,8 @@ jobs:
           TRANSACTION_SERVICE_PRINCIPAL_ID=$(az containerapp show --name transaction-service --resource-group ${{ env.RESOURCE_GROUP }} --query "identity.principalId" -o tsv)
           TRANSACTION_WORKER_PRINCIPAL_ID=$(az containerapp show --name transaction-worker --resource-group ${{ env.RESOURCE_GROUP }} --query "identity.principalId" -o tsv)
           
-          az role assignment create --assignee $TRANSACTION_SERVICE_PRINCIPAL_ID --role "Azure Service Bus Data Sender" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.ServiceBus/namespaces/${{ env.SERVICE_BUS_NAME }}"
-          az role assignment create --assignee $TRANSACTION_WORKER_PRINCIPAL_ID --role "Azure Service Bus Data Receiver" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.ServiceBus/namespaces/${{ env.SERVICE_BUS_NAME }}"
+          az role assignment create --assignee-object-id $TRANSACTION_SERVICE_PRINCIPAL_ID --assignee-principal-type ServicePrincipal --role "Azure Service Bus Data Sender" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.ServiceBus/namespaces/${{ env.SERVICE_BUS_NAME }}"
+          az role assignment create --assignee-object-id $TRANSACTION_WORKER_PRINCIPAL_ID --assignee-principal-type ServicePrincipal --role "Azure Service Bus Data Receiver" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.ServiceBus/namespaces/${{ env.SERVICE_BUS_NAME }}"
 
       # Step 7: Log out of Azure.
       - name: Logout of Azure
