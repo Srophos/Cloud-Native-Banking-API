@@ -37,11 +37,10 @@ jobs:
       - name: Create Resource Group
         run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
       - name: Replace Tokens in Parameter File
-        uses: qetza/vsts-replacetokens-action@v3
-        with:
-          files: 'infra/main.parameters.json'
-          tokenPrefix: '__'
-          tokenSuffix: '__'
+        shell: bash
+        run: |
+          sed -i 's/__SQL_ADMIN_USERNAME__/${{ secrets.SQL_ADMIN_USERNAME }}/g' infra/main.parameters.json
+          sed -i 's/__SQL_ADMIN_PASSWORD__/${{ secrets.SQL_ADMIN_PASSWORD }}/g' infra/main.parameters.json
 
       - name: Deploy Bicep Infrastructure
         uses: azure/arm-deploy@v1
