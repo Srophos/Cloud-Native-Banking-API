@@ -42,7 +42,6 @@ jobs:
           files: 'infra/main.parameters.json'
           tokenPrefix: '__'
           tokenSuffix: '__'
-          secrets: '${{ toJSON(secrets) }}'
 
       - name: Deploy Bicep Infrastructure
         uses: azure/arm-deploy@v1
