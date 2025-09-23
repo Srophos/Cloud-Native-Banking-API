@@ -1,84 +1,39 @@
 # Cloud-native Banking API
-This repository contains the source code and infrastructure blueprint for a comprehensive, cloud-native banking API backend. This project serves as a capstone, demonstrating the practical application of skills acquired through the Microsoft Azure certification path from AZ-900 to AZ-305 (Azure Solutions Architect Expert).
+🌟 Project Highlights (At a Glance)
+This project is a capstone demonstrating skills from the AZ-900 to AZ-305 (Azure Solutions Architect Expert) certification path.
 
-The architecture is designed to be secure, resilient, scalable, and fully automated, reflecting modern enterprise-level cloud practices.
+Enterprise Architecture: Designed a secure and resilient backend using a Microservices architecture, with an API Gateway (APIM) and an asynchronous messaging queue (Azure Service Bus).
+
+Passwordless Security: Implemented a modern, zero-trust security model using Azure Managed Identities and Role-Based Access Control (RBAC), eliminating the need for storing secrets like connection strings in code.
+
+Complete Automation: The entire cloud environment is defined as Infrastructure as Code (IaC) using Bicep. A full CI/CD pipeline in GitHub Actions automatically builds, tests, and deploys all infrastructure and application code on every commit.
 
 🏛️ Architecture Diagram
-(This is where you should insert the architecture diagram you created. Replace the placeholder link below with the path to your image.)
+(This is the most important visual. Replace the placeholder link below with the path to your architecture diagram.)
 
-<!-- Example:  -->
-
-✨ Core Features
-This project is not just a simple application; it's a complete system designed with professional architectural patterns:
+| Category                  | Technology / Service                               |
+| ------------------------- | -------------------------------------------------- |
+| **Cloud Platform** | Microsoft Azure                                    |
+| **Compute** | Azure Container Apps                               |
+| **API Gateway** | Azure API Management (Consumption Tier)            |
+| **Messaging** | Azure Service Bus (Queues)                         |
+| **Containerization** | Docker                                             |
+| **Backend Language** | Python 3.12 with FastAPI                           |
+| **Infrastructure as Code**| Bicep                                              |
+| **CI/CD** | GitHub Actions                                     |
 
 🔹 Microservices Architecture: The system is decomposed into three distinct, containerized microservices (AccountService, TransactionService, and a background TransactionWorker), allowing for independent scaling and development.
 
-🔹 Secure API Gateway: All incoming traffic is routed through Azure API Management (APIM). This provides a single, secure entry point that handles:
+🔹 Secure API Gateway: All incoming traffic is routed through Azure API Management (APIM). This provides a single, secure entry point that handles authentication, security policies, and intelligent routing.
 
-Authentication: All clients must provide a valid API subscription key.
+🔹 Resilient & Asynchronous Processing: To ensure no transaction is ever lost, the system uses an asynchronous messaging pattern with Azure Service Bus. The API instantly accepts requests and places them in a durable queue for safe processing by a background worker.
 
-Security: A "secret handshake" pattern (via a custom header) ensures that backend services only trust and serve requests originating from the APIM gateway.
+🔹 Serverless Compute: All services are deployed on Azure Container Apps, a serverless container orchestration platform that provides automatic scaling without the need to manage any underlying infrastructure.
 
-Routing: Intelligently forwards requests to the appropriate internal microservice.
+</details>
 
-🔹 Resilient & Asynchronous Processing: To ensure no transaction is ever lost, the system uses an asynchronous messaging pattern with Azure Service Bus. The API instantly accepts requests and places them in a durable queue, while a separate background worker processes them safely and reliably.
-
-🔹 Serverless Compute: All services are deployed on Azure Container Apps, a serverless container orchestration platform. This provides automatic scaling (including scaling to zero to save costs) without the need to manage any underlying virtual machines.
-
-🔹 Passwordless Security: The architecture employs a modern, passwordless security model. Services authenticate to each other and to Azure resources (like Service Bus) using Azure Managed Identities and Role-Based Access Control (RBAC), completely eliminating secrets like connection strings from the application code.
-
-🔹 Infrastructure as Code (IaC): The entire cloud infrastructure—every service, setting, and permission—is defined declaratively in a master blueprint using Bicep. This allows for consistent, reliable, and repeatable deployments.
-
-🔹 Full Automation (CI/CD): A complete GitHub Actions workflow provides a full CI/CD pipeline. Every git push to the main branch automatically:
-
-Builds all Docker images.
-
-Pushes them to a private Azure Container Registry.
-
-Deploys the full infrastructure from the Bicep template.
-
-Updates the running container apps with the new images.
-
-🛠️ Technology Stack
-Category
-
-Technology / Service
-
-Cloud Platform
-
-Microsoft Azure
-
-Compute
-
-Azure Container Apps
-
-API Gateway
-
-Azure API Management (Consumption Tier)
-
-Messaging
-
-Azure Service Bus (Queues)
-
-Containerization
-
-Docker
-
-Container Registry
-
-Azure Container Registry (ACR)
-
-Backend Language
-
-Python 3.12 with FastAPI
-
-Infrastructure as Code
-
-Bicep
-
-CI/CD
-
-GitHub Actions
+<details>
+<summary><strong>Click to see the System Flow and Deployment Steps</strong></summary>
 
 🌊 System Flow: Creating a Transaction
 A client sends a POST /transactions request to the public APIM Gateway URL, including its API subscription key.
@@ -92,23 +47,19 @@ The TransactionWorker, which is constantly listening to the queue, picks up the 
 The worker processes the transaction logic and, upon success, deletes the message from the queue to mark it as complete.
 
 🚀 Setup and Deployment
-This project is configured for fully automated deployment. To replicate this environment, you would need to:
+This project is configured for fully automated deployment. To replicate this environment:
 
-Prerequisites: An Azure subscription and the Azure CLI installed.
+Fork the Repository and clone it locally.
 
-Fork the Repository: Fork this repository to your own GitHub account.
+Create an Azure Service Principal with "Contributor" rights on your subscription.
 
-Create a Service Principal: Create an Azure Service Principal with the "Contributor" role on your subscription.
+Add GitHub Secrets: AZURE_CREDENTIALS (the JSON output from the principal) and AZURE_SUBSCRIPTION_ID.
 
-Create GitHub Secrets:
+Push a commit to the main branch to trigger the GitHub Actions workflow, which will build and deploy the entire project.
 
-AZURE_CREDENTIALS: The full JSON output from the service principal creation.
-
-AZURE_SUBSCRIPTION_ID: Your Azure Subscription ID.
-
-Push a Change: Pushing a commit to the main branch will trigger the GitHub Actions workflow, which will build and deploy the entire project to your Azure subscription.
+</details>
 
 🌱 Future Enhancements
-Integrate a Database: Replace the mock data in the AccountService with a real Azure SQL or Cosmos DB, including adding it to the Bicep template.
+Integrate a Database: Replace the mock data in the AccountService with a real Azure SQL or Cosmos DB.
 
 Build a Frontend: Create a simple React or Angular web app that interacts with the secure APIM endpoints and deploy it to Azure Static Web Apps.
