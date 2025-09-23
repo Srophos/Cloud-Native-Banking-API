@@ -1,13 +1,31 @@
-# Cloud-Native-Banking-API
-Cloud-Native Banking API on Microsoft Azure
+<p align="center">
+<img src="https://www.google.com/search?q=https://i.imgur.com/your-logo-placeholder.png" alt="Project Logo" width="150">
+</p>
+
+<h1 align="center">Cloud-Native Banking API on Azure</h1>
+
+<p align="center">
+A secure, resilient, and fully automated banking API backend built on Microsoft Azure, demonstrating an enterprise-grade microservices architecture.
+</p>
+
+<p align="center">
+<img src="https://www.google.com/search?q=https://img.shields.io/badge/Azure-0078D4%3Fstyle%3Dfor-the-badge%26logo%3Dmicrosoftazure%26logoColor%3Dwhite" alt="Azure Badge"/>
+<img src="https://www.google.com/search?q=https://img.shields.io/badge/Python-3776AB%3Fstyle%3Dfor-the-badge%26logo%3Dpython%26logoColor%3Dwhite" alt="Python Badge"/>
+<img src="https://www.google.com/search?q=https://img.shields.io/badge/Docker-2496ED%3Fstyle%3Dfor-the-badge%26logo%3Ddocker%26logoColor%3Dwhite" alt="Docker Badge"/>
+<img src="https://www.google.com/search?q=https://img.shields.io/badge/Bicep-0078D4%3Fstyle%3Dfor-the-badge%26logo%3Dazuredevops%26logoColor%3Dwhite" alt="Bicep Badge"/>
+<img src="https://www.google.com/search?q=https://img.shields.io/badge/GitHub_Actions-2088FF%3Fstyle%3Dfor-the-badge%26logo%3Dgithubactions%26logoColor%3Dwhite" alt="GitHub Actions Badge"/>
+</p>
+
 This repository contains the source code and infrastructure blueprint for a comprehensive, cloud-native banking API backend. This project serves as a capstone, demonstrating the practical application of skills acquired through the Microsoft Azure certification path from AZ-900 to AZ-305 (Azure Solutions Architect Expert).
 
 The architecture is designed to be secure, resilient, scalable, and fully automated, reflecting modern enterprise-level cloud practices.
 
-Architecture Diagram
+🏛️ Architecture Diagram
 (This is where you should insert the architecture diagram you created. Replace the placeholder link below with the path to your image.)
 
-Core Features
+<!-- Example:  -->
+
+✨ Core Features
 This project is not just a simple application; it's a complete system designed with professional architectural patterns:
 
 🔹 Microservices Architecture: The system is decomposed into three distinct, containerized microservices (AccountService, TransactionService, and a background TransactionWorker), allowing for independent scaling and development.
@@ -38,26 +56,48 @@ Deploys the full infrastructure from the Bicep template.
 
 Updates the running container apps with the new images.
 
-Technology Stack
-Cloud Platform: Microsoft Azure
+🛠️ Technology Stack
+Category
 
-Compute: Azure Container Apps
+Technology / Service
 
-API Gateway: Azure API Management (Consumption Tier)
+Cloud Platform
 
-Messaging: Azure Service Bus (Queues)
+Microsoft Azure
 
-Containerization: Docker
+Compute
 
-Container Registry: Azure Container Registry (ACR)
+Azure Container Apps
 
-Backend Language: Python 3.12 with FastAPI
+API Gateway
 
-Infrastructure as Code: Bicep
+Azure API Management (Consumption Tier)
 
-CI/CD: GitHub Actions
+Messaging
 
-System Flow: Creating a Transaction
+Azure Service Bus (Queues)
+
+Containerization
+
+Docker
+
+Container Registry
+
+Azure Container Registry (ACR)
+
+Backend Language
+
+Python 3.12 with FastAPI
+
+Infrastructure as Code
+
+Bicep
+
+CI/CD
+
+GitHub Actions
+
+🌊 System Flow: Creating a Transaction
 A client sends a POST /transactions request to the public APIM Gateway URL, including its API subscription key.
 
 APIM validates the key and routes the request to the internal TransactionService.
@@ -68,7 +108,7 @@ The TransactionWorker, which is constantly listening to the queue, picks up the 
 
 The worker processes the transaction logic and, upon success, deletes the message from the queue to mark it as complete.
 
-Setup and Deployment
+🚀 Setup and Deployment
 This project is configured for fully automated deployment. To replicate this environment, you would need to:
 
 Prerequisites: An Azure subscription and the Azure CLI installed.
@@ -85,7 +125,7 @@ AZURE_SUBSCRIPTION_ID: Your Azure Subscription ID.
 
 Push a Change: Pushing a commit to the main branch will trigger the GitHub Actions workflow, which will build and deploy the entire project to your Azure subscription.
 
-Future Enhancements
+🌱 Future Enhancements
 Integrate a Database: Replace the mock data in the AccountService with a real Azure SQL or Cosmos DB, including adding it to the Bicep template.
 
 Build a Frontend: Create a simple React or Angular web app that interacts with the secure APIM endpoints and deploy it to Azure Static Web Apps.
