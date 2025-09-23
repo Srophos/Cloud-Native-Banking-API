@@ -2,11 +2,11 @@
 🌟 Project Highlights (At a Glance)
 This project is a capstone demonstrating skills from the AZ-900 to AZ-305 (Azure Solutions Architect Expert) certification path.
 
-Enterprise Architecture: Designed a secure and resilient backend using a Microservices architecture, with an API Gateway (APIM) and an asynchronous messaging queue (Azure Service Bus).
++  Enterprise Architecture: Designed a secure and resilient backend using a Microservices architecture, with an API Gateway (APIM) and an asynchronous messaging queue (Azure Service Bus).
 
-Passwordless Security: Implemented a modern, zero-trust security model using Azure Managed Identities and Role-Based Access Control (RBAC), eliminating the need for storing secrets like connection strings in code.
++  Passwordless Security: Implemented a modern, zero-trust security model using Azure Managed Identities and Role-Based Access Control (RBAC), eliminating the need for storing secrets like connection strings in code.
 
-Complete Automation: The entire cloud environment is defined as Infrastructure as Code (IaC) using Bicep. A full CI/CD pipeline in GitHub Actions automatically builds, tests, and deploys all infrastructure and application code on every commit.
++  Complete Automation: The entire cloud environment is defined as Infrastructure as Code (IaC) using Bicep. A full CI/CD pipeline in GitHub Actions automatically builds, tests, and deploys all infrastructure and application code on every commit.
 
 🏛️ Architecture Diagram
 (This is the most important visual. Replace the placeholder link below with the path to your architecture diagram.)
