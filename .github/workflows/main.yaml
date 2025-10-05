@@ -35,9 +35,7 @@ jobs:
       - name: Update Azure CLI
         run: az upgrade --yes --all
       - name: Create Resource Group
-        run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
-      - name: set defaults
-        run : az configure --defaults group="be8cdbf9-e480-4284-8ca5-6e8d91ff2538"
+        run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope --debug
       - name: Deploy Bicep Infrastructure
         uses: azure/arm-deploy@v1
         with:
