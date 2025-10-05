@@ -42,10 +42,7 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           resourceGroupName: ${{ env.RESOURCE_GROUP }}
           template: ./infra/main.bicep
-          parameters: >
-            projectName=${{ env.PROJECT_NAME }}
-            sqlAdminLogin="${{ secrets.SQL_ADMIN_USERNAME }}"
-            sqlAdminPassword="${{ secrets.SQL_ADMIN_PASSWORD }}"
+          parameters: ./infra/parameters.json
       # Step 4: Now that the ACR exists, log in to it.
       - name: Login to ACR
         run: az acr login --name ${{ env.ACR_NAME }}
