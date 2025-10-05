@@ -39,6 +39,7 @@ jobs:
       - name: Deploy Bicep Infrastructure
         uses: azure/cli@v2
         with:
+          azcliversion : 2.69.0
           inlineScript: |
             az deployment group create \
             --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
