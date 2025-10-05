@@ -207,10 +207,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
 
 // --- Role Assignments for Service Bus ---
 resource transactionServiceSenderRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(serviceBus.id, transactionServiceApp.id, '69a216fc-b8fb-44d8-824e-898b4def0749')
+  name: guid(serviceBus.id, transactionServiceApp.id, '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39')
   scope: serviceBus
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '69a216fc-b8fb-44d8-824e-898b4def0749')
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39')
     principalId: transactionServiceApp.identity.principalId
     principalType: 'ServicePrincipal'
   }
