@@ -1,65 +1,29 @@
-# This is the name of our CI/CD pipeline
-name: Build and Deploy Banking App
+name: Build and Deploy Application Code
 
-# This section defines the trigger for the workflow.
-# It will run every time you push code to the 'main' branch.
 on:
   push:
     branches:
       - main
-  workflow_dispatch: # Allows you to manually run the workflow too
+  workflow_dispatch:
 
-# This section defines the environment variables we'll use.
 env:
-  ACR_NAME: bankproj
-  APIM_NAME: bankproj-apim
+  ACR_NAME: bankproj      # Your ACR name from the Bicep file
   RESOURCE_GROUP: B-api
-  PROJECT_NAME: bankproj
-  SERVICE_BUS_NAME: bankproj-servicebus
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  build-and-deploy-apps:
+    runs-on: ubuntu-latest # Switched back to Ubuntu for speed
     steps:
-      # Step 1: Check out your code from the repository.
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Log in to Azure using the secret we created.
       - name: Login to Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Step 3: Deploy the entire infrastructure using your Bicep file FIRST.
-      - name: Update Azure CLI
-        run: az upgrade --yes --all
-      - name: Create Resource Group
-        run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
-      - name: Deploy Bicep Infrastructure
-        uses: azure/arm-deploy@v1
-        with:
-            subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-            resourceGroupName: ${{ env.RESOURCE_GROUP }}
-            template: ./infra/main.bicep
-            parameters: >
-              projectName=${{ env.PROJECT_NAME }} 
-              sqlAdminLogin=${{ secrets.SQL_ADMIN_USERNAME }}
-              sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}
-
-      # Step 4: Now that the ACR exists, log in to it.
-      - name: Login to ACR
-        run: az acr login --name ${{ env.ACR_NAME }}
-
-      # Step 5: Build, tag, and push all Docker images.
       - name: Build and Push Docker Images
         run: |
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/account-service:v1 ./AccountService
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-service:v1 ./TransactionService
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:v1 ./TransactionWorker
-          docker push ${{ env.ACR_NAME }}.azurecr.io/account-service:v1
-          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-service:v1
-          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:v1
           az acr login --name ${{ env.ACR_NAME }}
           docker build -t ${{ env.ACR_NAME }}.azurecr.io/account-service:latest ./AccountService
           docker push ${{ env.ACR_NAME }}.azurecr.io/account-service:latest
@@ -69,22 +33,9 @@ jobs:
           
           docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:latest ./TransactionWorker
           docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:latest
-      #6 update images 
+
       - name: Update Container Apps with Latest Image
         run: |
           az containerapp update --name account-service --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.ACR_NAME }}.azurecr.io/account-service:latest
           az containerapp update --name transaction-service --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.ACR_NAME }}.azurecr.io/transaction-service:latest
           az containerapp update --name transaction-worker --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:latest
-
-      # Step 6: Set the final RBAC permissions.
-      - name: Assign Service Bus Roles
-        run: |
-          TRANSACTION_SERVICE_PRINCIPAL_ID=$(az containerapp show --name transaction-service --resource-group ${{ env.RESOURCE_GROUP }} --query "identity.principalId" -o tsv)
-          TRANSACTION_WORKER_PRINCIPAL_ID=$(az containerapp show --name transaction-worker --resource-group ${{ env.RESOURCE_GROUP }} --query "identity.principalId" -o tsv)
-          
-          az role assignment create --assignee-object-id $TRANSACTION_SERVICE_PRINCIPAL_ID --assignee-principal-type ServicePrincipal --role "Azure Service Bus Data Sender" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.ServiceBus/namespaces/${{ env.SERVICE_BUS_NAME }}"
-          az role assignment create --assignee-object-id $TRANSACTION_WORKER_PRINCIPAL_ID --assignee-principal-type ServicePrincipal --role "Azure Service Bus Data Receiver" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.ServiceBus/namespaces/${{ env.SERVICE_BUS_NAME }}"
-
-      # Step 7: Log out of Azure.
-      - name: Logout of Azure
-        run: az logout
