@@ -34,9 +34,10 @@ jobs:
       # Step 3: Deploy the entire infrastructure using your Bicep file FIRST.
       - name: Update Azure CLI
         run: az upgrade --yes --all
-
+      - name: Create Resource Group
+        run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
       - name: Deploy Bicep Infrastructure
-        run : az deployment group create --resource-group B-api --template-file ./infra/main.bicep --parameters projectName=${{ env.PROJECT_NAME }} sqlAdminLogin=${{ secrets.SQL_ADMIN_USERNAME }} sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}
+        run : az deployment group create --resource-group B-api --template-file ./infra/main.bicep --parameters projectName=${{ env.PROJECT_NAME }} sqlAdminLogin=${{ secrets.SQL_ADMIN_USERNAME }} sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }} 
       # Step 4: Now that the ACR exists, log in to it.
       - name: Login to ACR
         run: az acr login --name ${{ env.ACR_NAME }}
@@ -65,7 +66,6 @@ jobs:
           az containerapp update --name account-service --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.ACR_NAME }}.azurecr.io/account-service:latest
           az containerapp update --name transaction-service --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.ACR_NAME }}.azurecr.io/transaction-service:latest
           az containerapp update --name transaction-worker --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:latest
-
       # Step 6: Set the final RBAC permissions.
       - name: Assign Service Bus Roles
         run: |
@@ -74,7 +74,6 @@ jobs:
           
           az role assignment create --assignee-object-id $TRANSACTION_SERVICE_PRINCIPAL_ID --assignee-principal-type ServicePrincipal --role "Azure Service Bus Data Sender" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.ServiceBus/namespaces/${{ env.SERVICE_BUS_NAME }}"
           az role assignment create --assignee-object-id $TRANSACTION_WORKER_PRINCIPAL_ID --assignee-principal-type ServicePrincipal --role "Azure Service Bus Data Receiver" --scope "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/${{ env.RESOURCE_GROUP }}/providers/Microsoft.ServiceBus/namespaces/${{ env.SERVICE_BUS_NAME }}"
-
       # Step 7: Log out of Azure.
       - name: Logout of Azure
         run: az logout
