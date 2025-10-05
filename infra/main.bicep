@@ -1,7 +1,11 @@
 // === PARAMETERS ===
 param projectName string = 'bankproj'
 param location string = 'northeurope'
-param imageTag string = 'v1' // Dynamic tag for container images
+param imageTag string = 'v1' // Can be overridden by CI/CD
+@secure()
+param sqlAdminLogin string // Secure input for SQL admin username
+@secure()
+param sqlAdminPassword string // Secure input for SQL admin password
 
 // === VARIABLES ===
 var acrName = 'bankproj'
@@ -9,6 +13,9 @@ var serviceBusNamespaceName = '${projectName}-servicebus'
 var apimName = 'bankproj-apim'
 var containerAppEnvName = 'BankingAppEnv'
 var logAnalyticsWorkspaceName = '${projectName}-logs'
+var sqlServerName = '${projectName}-sqlserver-${uniqueString(resourceGroup().id)}'
+var sqlDatabaseName = 'BankingDB'
+var keyVaultName = '${projectName}kv${uniqueString(resourceGroup().id)}' // Shortened for compliance
 
 // --- Azure Container Registry ---
 resource acr 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' = {
@@ -144,5 +151,77 @@ resource transactionWorkerApp 'Microsoft.App/containerApps@2023-05-01' = {
       ]
       scale: { minReplicas: 1 }
     }
+  }
+}
+
+// --- Azure SQL Server ---
+resource sqlServer 'Microsoft.Sql/servers@2022-08-01-preview' = {
+  name: sqlServerName
+  location: location
+  properties: {
+    administratorLogin: sqlAdminLogin
+    administratorLoginPassword: sqlAdminPassword
+    publicNetworkAccess: 'Disabled' // Secure by default
+  }
+}
+
+// --- Azure SQL Database ---
+resource sqlDatabase 'Microsoft.Sql/servers/databases@2022-08-01-preview' = {
+  name: sqlDatabaseName
+  parent: sqlServer
+  location: location
+  sku: {
+    name: 'S0'
+    tier: 'Standard'
+  }
+  properties: {
+    // We'll start with a sample database which includes some tables and data.
+    sampleName: 'AdventureWorksLT'
+  }
+}
+
+// --- Azure Key Vault ---
+resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
+  name: keyVaultName
+  location: location
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: subscription().tenantId
+    accessPolicies: [
+      {
+        // Automatically give the account-service identity permission to GET secrets.
+        tenantId: accountServiceApp.identity.tenantId
+        objectId: accountServiceApp.identity.principalId
+        permissions: {
+          secrets: [
+            'get', 'list'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+// --- Role Assignments for Service Bus ---
+resource transactionServiceSenderRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(serviceBus.id, transactionServiceApp.id, '69a216fc-b8fb-44d8-824e-898b4def0749')
+  scope: serviceBus
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '69a216fc-b8fb-44d8-824e-898b4def0749')
+    principalId: transactionServiceApp.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource transactionWorkerReceiverRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(serviceBus.id, transactionWorkerApp.id, '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0')
+  scope: serviceBus
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0')
+    principalId: transactionWorkerApp.identity.principalId
+    principalType: 'ServicePrincipal'
   }
 }
