@@ -36,8 +36,8 @@ jobs:
         run: az upgrade --yes --all
       - name: Create Resource Group
         run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
-        run : az configure --defaults group="be8cdbf9-e480-4284-8ca5-6e8d91ff2538"
       - name: Deploy Bicep Infrastructure
+        run : az configure --defaults group="be8cdbf9-e480-4284-8ca5-6e8d91ff2538"
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
