@@ -37,7 +37,7 @@ jobs:
       - name: Create Resource Group
         run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
       - name: Deploy Bicep Infrastructure
-        run : az deployment group  --template-file ./infra/main.bicep --parameters projectName=${{ env.PROJECT_NAME }} sqlAdminLogin=${{ secrets.SQL_ADMIN_USERNAME }} sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}
+        run : az deployment group create --template-file ./infra/main.bicep --parameters projectName=${{ env.PROJECT_NAME }} sqlAdminLogin=${{ secrets.SQL_ADMIN_USERNAME }} sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}
       # Step 4: Now that the ACR exists, log in to it.
       - name: Login to ACR
         run: az acr login --name ${{ env.ACR_NAME }}
