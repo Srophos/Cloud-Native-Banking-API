@@ -44,8 +44,8 @@ jobs:
           template: ./infra/main.bicep
           parameters: >
             projectName=${{ env.PROJECT_NAME }}
-            sqlAdminLogin=$SQL_ADMIN_USERNAME
-            sqlAdminPassword=$SQL_ADMIN_PASSWORD
+            sqlAdminLogin="${{ secrets.SQL_ADMIN_USERNAME }}"
+            sqlAdminPassword="${{ secrets.SQL_ADMIN_PASSWORD }}"
       # Step 4: Now that the ACR exists, log in to it.
       - name: Login to ACR
         run: az acr login --name ${{ env.ACR_NAME }}
