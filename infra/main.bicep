@@ -1,7 +1,7 @@
 // === PARAMETERS ===
 param projectName string = 'bankproj'
 param location string = 'northeurope'
-param imageTag string = 'v1' // Can be overridden by CI/CD
+param imageTag string = 'latest' // Can be overridden by CI/CD
 @secure()
 param sqlAdminLogin string // Secure input for SQL admin username
 @secure()
