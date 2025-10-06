@@ -1,7 +1,7 @@
 // === PARAMETERS ===
 param projectName string = 'bankproj'
 param location string = 'northeurope'
-param imageTag string = 'latest' // Can be overridden by CI/CD
+param imageTag string = 'v1' // Can be overridden by CI/CD
 @secure()
 param sqlAdminLogin string // Secure input for SQL admin username
 @secure()
@@ -16,11 +16,6 @@ var logAnalyticsWorkspaceName = '${projectName}-logs'
 var sqlServerName = '${projectName}-sqlserver-${uniqueString(resourceGroup().id)}'
 var sqlDatabaseName = 'BankingDB'
 var keyVaultName = '${projectName}kv${uniqueString(resourceGroup().id)}' // Shortened for compliance
-var privateDnsZoneName = 'privatelink.database.windows.net'
-var sqlPrivateEndpointName = '${projectName}-sql-pe'
-var virtualNetworkName = '${projectName}-vnet'
-var containerAppsSubnetName = 'containerapps-subnet'
-var privateEndpointsSubnetName = 'private-endpoints-subnet' // NEW: Name for the second subnet
 
 // --- Azure Container Registry ---
 resource acr 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' = {
@@ -61,48 +56,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
   }
 }
 
-// --- VIRTUAL NETWORK ---
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
-  name: virtualNetworkName
-  location: location
-  properties: {
-    addressSpace: {
-      addressPrefixes: [
-        '10.0.0.0/16'
-      ]
-    }
-  }
-}
-
-// --- SUBNET for Container Apps ---
-resource containerAppsSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' = {
-  parent: virtualNetwork
-  name: containerAppsSubnetName
-  properties: {
-    addressPrefix: '10.0.0.0/23'
-    delegations: [
-      {
-        name: 'ca-delegation'
-        properties: {
-          serviceName: 'Microsoft.App/environments'
-        }
-      }
-    ]
-  }
-}
-
-// --- SUBNET for Private Endpoints (NEW) ---
-resource privateEndpointsSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' = {
-  parent: virtualNetwork
-  name: privateEndpointsSubnetName
-  properties: {
-    addressPrefix: '10.0.2.0/24' // A different address range within the VNet
-    // This subnet has no delegations, so it can host Private Endpoints.
-  }
-}
-
-
-// --- Container Apps Environment (UPDATED to use new VNet) ---
+// --- Container Apps Environment ---
 resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: containerAppEnvName
   location: location
@@ -113,9 +67,6 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
         customerId: logAnalyticsWorkspace.properties.customerId
         sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
       }
-    }
-    vnetConfiguration: {
-      infrastructureSubnetId: containerAppsSubnet.id
     }
   }
 }
@@ -224,6 +175,7 @@ resource sqlDatabase 'Microsoft.Sql/servers/databases@2022-08-01-preview' = {
     tier: 'Standard'
   }
   properties: {
+    // We'll start with a sample database which includes some tables and data.
     sampleName: 'AdventureWorksLT'
   }
 }
@@ -240,6 +192,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
     tenantId: subscription().tenantId
     accessPolicies: [
       {
+        // Automatically give the account-service identity permission to GET secrets.
         tenantId: accountServiceApp.identity.tenantId
         objectId: accountServiceApp.identity.principalId
         permissions: {
@@ -254,10 +207,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
 
 // --- Role Assignments for Service Bus ---
 resource transactionServiceSenderRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(serviceBus.id, transactionServiceApp.id, '69a216fc-b8fb-44d8-824e-898b4def0749')
+  name: guid(serviceBus.id, transactionServiceApp.id, '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39')
   scope: serviceBus
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '69a216fc-b8fb-44d8-824e-898b4def0749')
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39')
     principalId: transactionServiceApp.identity.principalId
     principalType: 'ServicePrincipal'
   }
@@ -270,65 +223,5 @@ resource transactionWorkerReceiverRole 'Microsoft.Authorization/roleAssignments@
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0')
     principalId: transactionWorkerApp.identity.principalId
     principalType: 'ServicePrincipal'
-  }
-}
-
-// --- Secure Private Networking for SQL ---
-
-// 1. Create a Private DNS Zone for Azure SQL
-resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: privateDnsZoneName
-  location: 'global'
-}
-
-// 2. Link the DNS Zone to our new, explicitly created VNet
-resource vnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  parent: privateDnsZone
-  name: '${privateDnsZoneName}-link'
-  location: 'global'
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: virtualNetwork.id
-    }
-  }
-}
-
-// 3. Create the Private Endpoint for the SQL Server in our NEW Private Endpoint Subnet
-resource sqlPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = {
-  name: sqlPrivateEndpointName
-  location: location
-  properties: {
-    subnet: {
-      // UPDATED: This now correctly points to our new, non-delegated subnet.
-      id: privateEndpointsSubnet.id
-    }
-    privateLinkServiceConnections: [
-      {
-        name: '${sqlPrivateEndpointName}-conn'
-        properties: {
-          privateLinkServiceId: sqlServer.id
-          groupIds: [
-            'sqlServer'
-          ]
-        }
-      }
-    ]
-  }
-}
-
-// 4. Create the DNS record for the Private Endpoint
-resource sqlPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
-  parent: sqlPrivateEndpoint
-  name: 'default'
-  properties: {
-    privateDnsZoneConfigs: [
-      {
-        name: 'sql-dns-config'
-        properties: {
-          privateDnsZoneId: privateDnsZone.id
-        }
-      }
-    ]
   }
 }
