@@ -16,7 +16,8 @@ var logAnalyticsWorkspaceName = '${projectName}-logs'
 var sqlServerName = '${projectName}-sqlserver-${uniqueString(resourceGroup().id)}'
 var sqlDatabaseName = 'BankingDB'
 var keyVaultName = '${projectName}kv${uniqueString(resourceGroup().id)}' // Shortened for compliance
-
+var privateDnsZoneName = 'privatelink.database.windows.net' // Standard DNS zone for SQL
+var sqlPrivateEndpointName = '${projectName}-sql-pe'
 // --- Azure Container Registry ---
 resource acr 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' = {
   name: acrName
@@ -223,5 +224,63 @@ resource transactionWorkerReceiverRole 'Microsoft.Authorization/roleAssignments@
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0')
     principalId: transactionWorkerApp.identity.principalId
     principalType: 'ServicePrincipal'
+  }
+}
+// --- Secure Private Networking for SQL (NEW) ---
+
+// 1. Create a Private DNS Zone for Azure SQL
+resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: privateDnsZoneName
+  location: 'global'
+}
+
+// 2. Link the DNS Zone to the Container App Environment's Virtual Network
+resource vnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  parent: privateDnsZone
+  name: '${privateDnsZoneName}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: containerAppEnv.properties.vnetConfiguration.infrastructureSubnetId
+    }
+  }
+}
+
+// 3. Create the Private Endpoint for the SQL Server
+resource sqlPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = {
+  name: sqlPrivateEndpointName
+  location: location
+  properties: {
+    subnet: {
+      id: containerAppEnv.properties.vnetConfiguration.infrastructureSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${sqlPrivateEndpointName}-conn'
+        properties: {
+          privateLinkServiceId: sqlServer.id
+          groupIds: [
+            'sqlServer'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+// 4. Create the DNS record for the Private Endpoint in the Private DNS Zone
+resource sqlPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
+  parent: sqlPrivateEndpoint
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'sql-dns-config'
+        properties: {
+          privateDnsZoneId: privateDnsZone.id
+        }
+      }
+    ]
   }
 }
