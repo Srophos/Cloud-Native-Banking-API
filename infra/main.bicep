@@ -17,7 +17,9 @@ var sqlServerName = '${projectName}-sqlserver-${uniqueString(resourceGroup().id)
 var sqlDatabaseName = 'BankingDB'
 var keyVaultName = '${projectName}kv${uniqueString(resourceGroup().id)}' // Shortened for compliance
 var privateDnsZoneName = 'privatelink.database.windows.net' // Standard DNS zone for SQL
-var sqlPrivateEndpointName = '${projectName}-sql-pe'
+var sqlPrivateEndpointName = '${projectName}-sql-pe' 
+var virtualNetworkName='${projectName}-vnet'
+var containerAppsSubnet = 'containerapps-subnet'
 // --- Azure Container Registry ---
 resource acr 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' = {
   name: acrName
@@ -234,7 +236,37 @@ resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   location: 'global'
 }
 
-// 2. Link the DNS Zone to the Container App Environment's Virtual Network
+
+// 2. Create a Virtual Network for private networking
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
+  name: virtualNetworkName
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.0.0.0/16'
+      ]
+    }
+    subnets: [
+      {
+        name: containerAppsSubnet
+        properties: {
+          addressPrefix: '10.0.0.0/23'
+          delegations: [
+            {
+              name: 'Microsoft.App.environments'
+              properties: {
+                serviceName: 'Microsoft.App/environments'
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+// 2. Link the DNS Zone to our new, explicitly created VNet
 resource vnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   parent: privateDnsZone
   name: '${privateDnsZoneName}-link'
@@ -242,18 +274,18 @@ resource vnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06
   properties: {
     registrationEnabled: false
     virtualNetwork: {
-      id: containerAppEnv.properties.vnetConfiguration.infrastructureSubnetId
+      id: virtualNetwork.id
     }
   }
 }
 
-// 3. Create the Private Endpoint for the SQL Server
+// 3. Create the Private Endpoint for the SQL Server in our new Subnet
 resource sqlPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   name: sqlPrivateEndpointName
   location: location
   properties: {
     subnet: {
-      id: containerAppEnv.properties.vnetConfiguration.infrastructureSubnetId
+      id: virtualNetwork.properties.subnets[0].id
     }
     privateLinkServiceConnections: [
       {
@@ -267,12 +299,9 @@ resource sqlPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = {
       }
     ]
   }
-  dependsOn: [
-    containerAppEnv
-  ]
 }
 
-// 4. Create the DNS record for the Private Endpoint in the Private DNS Zone
+// 4. Create the DNS record for the Private Endpoint
 resource sqlPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
   parent: sqlPrivateEndpoint
   name: 'default'
