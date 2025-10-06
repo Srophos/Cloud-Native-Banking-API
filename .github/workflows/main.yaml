@@ -35,7 +35,7 @@ jobs:
       - name: Update Azure CLI
         run: az upgrade --yes --all
       - name: Create Resource Group
-        run: az group create --name ${{ env.RESOURCE_GROUP }} --location ${{ env.LOCATION }}
+        run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
       - name: Create Azure Container Registry
         run: az acr create --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.ACR_NAME }} --sku Basic --admin-enabled true
             # Step 4: Now that the ACR exists, log in to it.
