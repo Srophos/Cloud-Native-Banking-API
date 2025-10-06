@@ -267,6 +267,9 @@ resource sqlPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = {
       }
     ]
   }
+  dependsOn: [
+    containerAppEnv
+  ]
 }
 
 // 4. Create the DNS record for the Private Endpoint in the Private DNS Zone
