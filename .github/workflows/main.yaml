@@ -34,8 +34,6 @@ jobs:
       # Step 3: Deploy the entire infrastructure using your Bicep file FIRST.
       - name: Update Azure CLI
         run: az upgrade --yes --all
-      - name: Create Resource Group
-        run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
       - name: Deploy Bicep Infrastructure
         run: az deployment group create --resource-group ${{ env.RESOURCE_GROUP }} --template-file ./infra/main.bicep --parameters "projectName=${{ env.PROJECT_NAME }}" "sqlAdminLogin=${{ secrets.SQL_ADMIN_USERNAME }}" "sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}"
       # Step 4: Now that the ACR exists, log in to it.
@@ -45,13 +43,6 @@ jobs:
       # Step 5: Build, tag, and push all Docker images.
       - name: Build and Push Docker Images
         run: |
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/account-service:v1 ./AccountService
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-service:v1 ./TransactionService
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:v1 ./TransactionWorker
-          docker push ${{ env.ACR_NAME }}.azurecr.io/account-service:v1
-          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-service:v1
-          docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:v1
-          az acr login --name ${{ env.ACR_NAME }}
           docker build -t ${{ env.ACR_NAME }}.azurecr.io/account-service:latest ./AccountService
           docker push ${{ env.ACR_NAME }}.azurecr.io/account-service:latest
           
