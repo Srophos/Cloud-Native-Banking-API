@@ -54,7 +54,7 @@ jobs:
           docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:latest ./TransactionWorker
           docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:latest
       - name: Deploy Bicep Infrastructure
-        run: az deployment group create --resource-group ${{ env.RESOURCE_GROUP }} --template-file ./infra/main.bicep --parameters "projectName=${{ env.PROJECT_NAME }}" "sqlAdminLogin=${{ secrets.SQL_ADMIN_USERNAME }}" "sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}" --debug
+        run: az deployment group create --resource-group ${{ env.RESOURCE_GROUP }} --template-file ./infra/main.bicep --parameters "projectName=${{ env.PROJECT_NAME }}" "sqlAdminLogin=${{ secrets.SQL_ADMIN_USERNAME }}" "sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}"
       #6 update images 
       - name: Update Container Apps with Latest Image
         run: |
