@@ -34,11 +34,9 @@ jobs:
       # Step 3: Deploy the entire infrastructure using your Bicep file FIRST.
       - name: Update Azure CLI
         run: az upgrade --yes --all
-      - name: Create Resource Group
-        run: az group create --name ${{ env.RESOURCE_GROUP }} --location northeurope
-      - name: Create Azure Container Registry
-        run: az acr create --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.ACR_NAME }} --sku Basic --admin-enabled true
-            # Step 4: Now that the ACR exists, log in to it.
+      - name: Deploy Bicep Infrastructure
+        run: az deployment group create --resource-group ${{ env.RESOURCE_GROUP }} --template-file ./infra/main.bicep --parameters "projectName=${{ env.PROJECT_NAME }}" "sqlAdminLogin=${{ secrets.SQL_ADMIN_USERNAME }}" "sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}"
+      # Step 4: Now that the ACR exists, log in to it.
       - name: Login to ACR
         run: az acr login --name ${{ env.ACR_NAME }}
 
@@ -53,8 +51,6 @@ jobs:
           
           docker build -t ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:latest ./TransactionWorker
           docker push ${{ env.ACR_NAME }}.azurecr.io/transaction-worker:latest
-      - name: Deploy Bicep Infrastructure
-        run: az deployment group create --resource-group ${{ env.RESOURCE_GROUP }} --template-file ./infra/main.bicep --parameters "projectName=${{ env.PROJECT_NAME }}" "sqlAdminLogin=${{ secrets.SQL_ADMIN_USERNAME }}" "sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}"
       #6 update images 
       - name: Update Container Apps with Latest Image
         run: |
